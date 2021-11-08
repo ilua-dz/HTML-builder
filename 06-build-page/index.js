@@ -68,7 +68,8 @@ const buildHtml = async (projectPath, templatePath, modulesPath) => {
 	stream.on('end', () => {
 		for (const module in modsObj) {
 			if (templateString.match(`\{\{${module}\}\}`)) {
-				templateString = templateString.replace(`\{\{${module}\}\}`, modsObj[module])
+				let regexp = new RegExp(`[{][{]${module}[}][}]`, 'gi')
+				templateString = templateString.replace(regexp, modsObj[module])
 			}
 		}
 		fsPromises.writeFile(path.join(projectPath, 'index.html'), templateString)
