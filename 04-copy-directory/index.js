@@ -7,15 +7,15 @@ const copyDir = async (srcDir, newDir) => {
 		await fs.mkdir(newDir);
 		const files = await fs.readdir(srcDir, { withFileTypes: true });
 		files.forEach(file => {
+			src = path.join(srcDir, file.name);
+			dest = path.join(newDir, file.name);
 			if (file.isDirectory()) {
-				copyDir(path.join(srcDir, file.name),
-					path.join(newDir, file.name))
+				copyDir(src, dest)
 			} else {
-				fs.copyFile(path.join(srcDir, file.name),
-					path.join(newDir, file.name));
+				fs.copyFile(src, dest);
 			}
 		})
-		console.log(`${srcDir}\ncopied to\n${newDir}`)
+		console.log(`-----\n${srcDir}\ncopied to\n${newDir}\n-----`)
 	} catch (err) { throw err }
 }
 
