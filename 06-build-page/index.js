@@ -50,7 +50,7 @@ const mergeStyles = async (projectPath, stylesPath) => {
 const buildHtml = async (projectPath, templatePath, modulesPath) => {
 	const modsObj = {};
 	const modules = await fsPromises.readdir(modulesPath, { withFileTypes: true });
-	for (const module of modules) {
+	for await (const module of modules) {
 		const moduleName = module.name.substring(0, module.name.lastIndexOf('.'));
 		const modulePath = path.join(modulesPath, module.name);
 		const stream = fs.createReadStream(modulePath, 'utf8');
@@ -65,15 +65,13 @@ const buildHtml = async (projectPath, templatePath, modulesPath) => {
 		templateString = chunk;
 	})
 
-	setTimeout(() => {
-		stream.on('end', () => {
-			for (const module in modsObj) {
-				if (templateString.match(`\{\{${module}\}\}`)) {
-					templateString = templateString.replace(`\{\{${module}\}\}`, modsObj[module])
-				}
+	stream.on('end', () => {
+		for (const module in modsObj) {
+			if (templateString.match(`\{\{${module}\}\}`)) {
+				templateString = templateString.replace(`\{\{${module}\}\}`, modsObj[module])
 			}
-			fsPromises.writeFile(path.join(projectPath, 'index.html'), templateString)
-		}, 100);
+		}
+		fsPromises.writeFile(path.join(projectPath, 'index.html'), templateString)
 	})
 }
 
