@@ -39,10 +39,8 @@ const mergeStyles = async (projectPath, stylesPath) => {
 	for (const file of styleFiles) {
 		if (file.isFile() && isFileCss(file.name)) {
 			const stylePath = path.join(stylesPath, file.name)
-			const stream = fs.createReadStream(stylePath, 'utf8');
-			stream.on('data', chunk => {
-				fsPromises.appendFile(bundlePath, chunk + '\n')
-			})
+			style = await fsPromises.readFile(stylePath, 'utf8')
+			await fsPromises.appendFile(bundlePath, style + '\n')
 		}
 	}
 }
@@ -50,30 +48,21 @@ const mergeStyles = async (projectPath, stylesPath) => {
 const buildHtml = async (projectPath, templatePath, modulesPath) => {
 	const modsObj = {};
 	const modules = await fsPromises.readdir(modulesPath, { withFileTypes: true });
-	for await (const module of modules) {
+	for (const module of modules) {
 		const moduleName = module.name.substring(0, module.name.lastIndexOf('.'));
 		const modulePath = path.join(modulesPath, module.name);
-		const stream = fs.createReadStream(modulePath, 'utf8');
-		stream.on('data', chunk => {
-			modsObj[moduleName] = chunk;
-		})
+		modsObj[moduleName] = await fsPromises.readFile(modulePath, 'utf8');
 	}
 
-	const stream = fs.createReadStream(templatePath, 'utf8');
-	let templateString = '';
-	stream.on('data', chunk => {
-		templateString = chunk;
-	})
+	let templateString = await fsPromises.readFile(templatePath, 'utf8');
 
-	stream.on('end', () => {
-		for (const module in modsObj) {
-			if (templateString.match(`\{\{${module}\}\}`)) {
-				let regexp = new RegExp(`[{][{]${module}[}][}]`, 'gi')
-				templateString = templateString.replace(regexp, modsObj[module])
-			}
+	for (const module in modsObj) {
+		if (templateString.match(`\{\{${module}\}\}`)) {
+			let regexp = new RegExp(`[{][{]${module}[}][}]`, 'gi')
+			templateString = templateString.replace(regexp, modsObj[module])
 		}
-		fsPromises.writeFile(path.join(projectPath, 'index.html'), templateString)
-	})
+	}
+	fsPromises.writeFile(path.join(projectPath, 'index.html'), templateString)
 }
 
 createBundle(path.join(__dirname, 'project-dist'));

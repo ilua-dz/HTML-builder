@@ -11,10 +11,8 @@ const mergeStyles = async (projectPath, stylesPath) => {
 	for (const file of styleFiles) {
 		if (file.isFile() && isFileCss(file.name)) {
 			const stylePath = path.join(stylesPath, file.name)
-			const stream = fs.createReadStream(stylePath, 'utf8');
-			stream.on('data', chunk => {
-				fsPromises.appendFile(bundlePath, chunk + '\n')
-			})
+			style = await fsPromises.readFile(stylePath, 'utf8')
+			await fsPromises.appendFile(bundlePath, style + '\n')
 		}
 	}
 }
