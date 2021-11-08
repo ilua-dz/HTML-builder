@@ -47,10 +47,10 @@ const mergeStyles = async (projectPath, stylesPath) => {
 
 const buildHtml = async (projectPath, templatePath, modulesPath) => {
 	const modsObj = {};
-	const modules = await fsPromises.readdir(modulesPath, { withFileTypes: true });
+	const modules = await fsPromises.readdir(modulesPath);
 	for (const module of modules) {
-		const moduleName = module.name.substring(0, module.name.lastIndexOf('.'));
-		const modulePath = path.join(modulesPath, module.name);
+		const moduleName = module.substring(0, module.lastIndexOf('.'));
+		const modulePath = path.join(modulesPath, module);
 		modsObj[moduleName] = await fsPromises.readFile(modulePath, 'utf8');
 	}
 
